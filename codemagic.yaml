@@ -1,0 +1,27 @@
+workflows:
+  ios-flavor:
+    name: iOS Flavor Build
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: |
+          flutter pub get
+      - name: Install iOS Pods
+        script: |
+          cd ios
+          rm -rf Pods Podfile.lock
+          pod install
+          cd ..
+          flutter clean
+          flutter pub get
+    build:
+      ios:
+        flavor: ios-production
+        build_arguments: --debug --no-codesign -t lib/main_prod.dart
+        export_method: development
+    artifacts:
+      - build/ios/iphoneos/*.app
