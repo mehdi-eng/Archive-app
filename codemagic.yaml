@@ -10,11 +10,12 @@ workflows:
       vars:
         PROJECT_PATH: .
     scripts:
-      # Step 1: Get Flutter dependencies
+      - name: Flutter clean
+        script: flutter clean
+
       - name: Flutter pub get
         script: flutter pub get
 
-      # Step 2: Clean iOS pods and reinstall
       - name: Clean & Install iOS Pods
         script: |
           echo "Cleaning previous Pods..."
@@ -24,7 +25,6 @@ workflows:
           pod install
           cd ..
 
-      # Step 3: Build iOS app
       - name: Build iOS
         script: flutter build ios --debug --no-codesign -t lib/main.dart
 
