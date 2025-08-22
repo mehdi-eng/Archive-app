@@ -1,51 +1,31 @@
 workflows:
-  ios-flavor:
-    name: iOS Flavor Build
-    max_build_duration: 120
+  ios-build:
+    name: iOS Build
+    max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
-      vars:
-        PROJECT_PATH: .
     scripts:
-      - name: Flutter clean
-        script: flutter clean
+      # 1. Get dependencies
+      - name: Install Flutter dependencies
+        script: |
+          flutter clean
+          flutter pub get
 
-      - name: Flutter pub get
-        script: flutter pub get
+      # 2. Generate iOS ephemeral files (creates Flutter/Flutter.h)
+      - name: Build iOS in debug mode to create ephemeral
+        script: |
+          flutter precache --ios
+          flutter build ios --debug --no-codesign
 
-      - name: Ensure iOS platform set in Podfile
+      # 3. Install CocoaPods
+      - name: Install pods
         script: |
           cd ios
-          if ! grep -q "platform :ios" Podfile; then
-            echo "Adding iOS platform to Podfile..."
-            echo "platform :ios, '12.0'" >> Podfile
-          fi
-          cd ..
-
-      - name: Install CocoaPods
-        script: |
-          cd ios
-          pod repo update
-          pod install
-          cd ..
-
-      - name: Fix Flutter.h missing
-        script: |
-          cd ios
-          rm -rf Pods Podfile.lock
           pod install --repo-update
           cd ..
 
-      - name: Build iOS
-        script: flutter build ios --debug --no-codesign -t lib/main.dart
-
     artifacts:
-      - build/ios/iphoneos/*.app
-
-    publishing:
-      email:
-        recipients:
-          - teabanimehdi@gmail.com
+      - build/ios/ipa/*.ipa
