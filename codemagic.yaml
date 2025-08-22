@@ -8,7 +8,7 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      # 1. Get dependencies
+      # 1. Clean and get dependencies
       - name: Install Flutter dependencies
         script: |
           flutter clean
@@ -18,14 +18,24 @@ workflows:
       - name: Build iOS in debug mode to create ephemeral
         script: |
           flutter precache --ios
-          flutter build ios --debug --no-codesign
+          flutter build ios --debug --no-codesign -t lib/main.dart
 
       # 3. Install CocoaPods
       - name: Install pods
         script: |
           cd ios
+          rm -rf Pods Podfile.lock
           pod install --repo-update
+
+          # 3a. Include Pods xcconfig in Flutter configs (fixes Flutter/Flutter.h not found)
+          echo '#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"' >> Flutter/Debug.xcconfig
+          echo '#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"' >> Flutter/Release.xcconfig
+          echo '#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"' >> Flutter/Profile.xcconfig
           cd ..
 
+      # 4. Build iOS app for device/simulator
+      - name: Build iOS app
+        script: flutter build ios --debug --no-codesign -t lib/main.dart
+
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/iphoneos/*.app
