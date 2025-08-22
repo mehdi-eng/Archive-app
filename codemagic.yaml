@@ -1,27 +1,62 @@
 workflows:
   ios-flavor:
     name: iOS Flavor Build
-    max_build_duration: 60
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
+      vars:
+        PROJECT_PATH: .
     scripts:
-      - name: Install dependencies
-        script: |
-          flutter pub get
-      - name: Install iOS Pods
+      - name: Flutter pub get
+        script: flutter pub get
+      - name: Pre-build iOS
         script: |
           cd ios
           rm -rf Pods Podfile.lock
           pod install
           cd ..
-          flutter clean
-          flutter pub get
-    build:
-      ios:
-        flavor: ios-production
-        build_arguments: --debug --no-codesign -t lib/main_prod.dart
-        export_method: development
+      - name: Build iOS
+        script: flutter build ios --debug --no-codesign --flavor ios-production -t lib/main_prod.dart
     artifacts:
       - build/ios/iphoneos/*.app
+    publishing:
+      email:
+        recipients:
+          - teabanimehdi@gmail.com
+
+  android-flavor:
+    name: Android Flavor Build
+    environment:
+      flutter: stable
+      vars:
+        PROJECT_PATH: .
+    scripts:
+      - name: Flutter pub get
+        script: flutter pub get
+      - name: Build Android
+        script: flutter build apk --debug --flavor android-production -t lib/main_prod.dart
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+    publishing:
+      email:
+        recipients:
+          - teabanimehdi@gmail.com
+
+  web-flavor:
+    name: Web Flavor Build
+    environment:
+      flutter: stable
+      vars:
+        PROJECT_PATH: .
+    scripts:
+      - name: Flutter pub get
+        script: flutter pub get
+      - name: Build Web
+        script: flutter build web -t lib/main_prod.dart
+    artifacts:
+      - build/web/**
+    publishing:
+      email:
+        recipients:
+          - teabanimehdi@gmail.com
