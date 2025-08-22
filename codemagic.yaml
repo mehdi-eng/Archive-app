@@ -1,6 +1,8 @@
 workflows:
   ios-flavor:
     name: iOS Flavor Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
@@ -8,18 +10,27 @@ workflows:
       vars:
         PROJECT_PATH: .
     scripts:
+      # Step 1: Get Flutter dependencies
       - name: Flutter pub get
         script: flutter pub get
-      - name: Pre-build iOS
+
+      # Step 2: Clean iOS pods and reinstall
+      - name: Clean & Install iOS Pods
         script: |
+          echo "Cleaning previous Pods..."
           cd ios
           rm -rf Pods Podfile.lock
+          pod repo update
           pod install
           cd ..
+
+      # Step 3: Build iOS app
       - name: Build iOS
         script: flutter build ios --debug --no-codesign -t lib/main.dart
+
     artifacts:
       - build/ios/iphoneos/*.app
+
     publishing:
       email:
         recipients:
