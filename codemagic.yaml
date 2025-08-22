@@ -1,25 +1,26 @@
 workflows:
-  ios-flavor:
-    name: iOS Flavor Build
+  ios-build:
+    name: iOS Build Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
-      vars:
-        PROJECT_PATH: .
     scripts:
       - name: Flutter pub get
         script: flutter pub get
-      - name: Pre-build iOS
+      - name: Clean & Install iOS Pods
         script: |
+          flutter clean
           cd ios
           rm -rf Pods Podfile.lock
           pod install
           cd ..
-      - name: Build iOS
-        script: flutter build ios --debug --no-codesign -t lib/main.dart
+      - name: Build iOS Simulator
+        script: flutter build ios --debug --simulator -t lib/main.dart
     artifacts:
-      - build/ios/iphoneos/*.app
+      - build/ios/iphonesimulator/*.app
     publishing:
       email:
         recipients:
