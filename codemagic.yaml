@@ -17,45 +17,9 @@ workflows:
           pod install
           cd ..
       - name: Build iOS
-        script: flutter build ios --debug --no-codesign --flavor ios-production -t lib/main_prod.dart
+        script: flutter build ios --debug --no-codesign -t lib/main.dart
     artifacts:
       - build/ios/iphoneos/*.app
-    publishing:
-      email:
-        recipients:
-          - teabanimehdi@gmail.com
-
-  android-flavor:
-    name: Android Flavor Build
-    environment:
-      flutter: stable
-      vars:
-        PROJECT_PATH: .
-    scripts:
-      - name: Flutter pub get
-        script: flutter pub get
-      - name: Build Android
-        script: flutter build apk --debug --flavor android-production -t lib/main_prod.dart
-    artifacts:
-      - build/app/outputs/flutter-apk/*.apk
-    publishing:
-      email:
-        recipients:
-          - teabanimehdi@gmail.com
-
-  web-flavor:
-    name: Web Flavor Build
-    environment:
-      flutter: stable
-      vars:
-        PROJECT_PATH: .
-    scripts:
-      - name: Flutter pub get
-        script: flutter pub get
-      - name: Build Web
-        script: flutter build web -t lib/main_prod.dart
-    artifacts:
-      - build/web/**
     publishing:
       email:
         recipients:
