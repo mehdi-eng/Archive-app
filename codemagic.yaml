@@ -1,5 +1,5 @@
 workflows:
-  ios-flavor:   # <-- this is the workflow ID
+  ios-flavor:
     name: iOS Flavor Build
     environment:
       flutter: stable
@@ -12,7 +12,6 @@ workflows:
         script: flutter pub get
       - name: Pre-build iOS
         script: |
-          flutter clean
           cd ios
           rm -rf Pods Podfile.lock
           pod install
