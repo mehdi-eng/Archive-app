@@ -1,41 +1,44 @@
 workflows:
-  ios-build:
-    name: iOS Build
+  ios-flavor:
+    name: iOS Flavor Build
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
+      vars:
+        FLAVOR: ios-production  # your flavor name
+        ENTRY_POINT: lib/main_prod.dart  # corresponding main file
     scripts:
-      # 1. Clean and get dependencies
+      # 1. Clean Flutter and get dependencies
       - name: Install Flutter dependencies
         script: |
           flutter clean
           flutter pub get
 
       # 2. Generate iOS ephemeral files (creates Flutter/Flutter.h)
-      - name: Build iOS in debug mode to create ephemeral
+      - name: Generate iOS ephemeral files
         script: |
           flutter precache --ios
-          flutter build ios --debug --no-codesign -t lib/main.dart
+          flutter build ios --debug --no-codesign --flavor $FLAVOR -t $ENTRY_POINT
 
-      # 3. Install CocoaPods
-      - name: Install pods
+      # 3. Install CocoaPods and fix xcconfig integration
+      - name: Install pods and fix configs
         script: |
           cd ios
           rm -rf Pods Podfile.lock
           pod install --repo-update
 
-          # 3a. Include Pods xcconfig in Flutter configs (fixes Flutter/Flutter.h not found)
+          # Include Pods xcconfig in Flutter configs to fix Flutter.h not found
           echo '#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"' >> Flutter/Debug.xcconfig
           echo '#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"' >> Flutter/Release.xcconfig
           echo '#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"' >> Flutter/Profile.xcconfig
           cd ..
 
-      # 4. Build iOS app for device/simulator
+      # 4. Build iOS app for the flavor
       - name: Build iOS app
-        script: flutter build ios --debug --no-codesign -t lib/main.dart
+        script: flutter build ios --debug --no-codesign --flavor $FLAVOR -t $ENTRY_POINT
 
     artifacts:
       - build/ios/iphoneos/*.app
