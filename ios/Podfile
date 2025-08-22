@@ -10,8 +10,9 @@ project 'Runner', {
 }
 
 def flutter_root
-  ENV['FLUTTER_ROOT'] || 'C:/src/flutter' # your flutter SDK path
+  ENV['FLUTTER_ROOT'] || 'D:/Flutter/flutter'
 end
+
 
 load File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb')
 
