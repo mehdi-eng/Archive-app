@@ -1,44 +1,31 @@
 workflows:
-  ios-flavor:
-    name: iOS Flavor Build
+  ios-build:
+    name: iOS Build
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
-      vars:
-        FLAVOR: ios-production  # your flavor name
-        ENTRY_POINT: lib/main.dart  # corresponding main file
     scripts:
-      # 1. Clean Flutter and get dependencies
+      # 1. Get dependencies
       - name: Install Flutter dependencies
         script: |
           flutter clean
           flutter pub get
 
       # 2. Generate iOS ephemeral files (creates Flutter/Flutter.h)
-      - name: Generate iOS ephemeral files
+      - name: Build iOS in debug mode to create ephemeral
         script: |
           flutter precache --ios
-          flutter build ios --debug --no-codesign --flavor $FLAVOR -t $ENTRY_POINT
+          flutter build ios --debug --no-codesign
 
-      # 3. Install CocoaPods and fix xcconfig integration
-      - name: Install pods and fix configs
+      # 3. Install CocoaPods
+      - name: Install pods
         script: |
           cd ios
-          rm -rf Pods Podfile.lock
           pod install --repo-update
-
-          # Include Pods xcconfig in Flutter configs to fix Flutter.h not found
-          echo '#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"' >> Flutter/Debug.xcconfig
-          echo '#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"' >> Flutter/Release.xcconfig
-          echo '#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"' >> Flutter/Profile.xcconfig
           cd ..
 
-      # 4. Build iOS app for the flavor
-      - name: Build iOS app
-        script: flutter build ios --debug --no-codesign --flavor $FLAVOR -t $ENTRY_POINT
-
     artifacts:
-      - build/ios/iphoneos/*.app
+      - build/ios/ipa/*.ipa
