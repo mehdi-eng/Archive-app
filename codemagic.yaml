@@ -8,30 +8,26 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      # 1. Clean and get Flutter dependencies
-      - name: Install Flutter dependencies
+      - name: Clean and get Flutter dependencies
         script: |
           flutter clean
           flutter pub get
 
-      # 2. Pre-cache Flutter iOS artifacts
-      - name: Pre-build iOS
+      - name: Pre-cache Flutter iOS artifacts
         script: flutter precache --ios
 
-      # 3. Install CocoaPods dependencies
       - name: Install CocoaPods
         script: |
           cd ios
-          rm -rf Pods Podfile.lock
+          rm -rf Pods Podfile.lock .symlinks
           pod install --repo-update
           cd ..
 
-      # 4. Build iOS app for simulator (no signing needed)
       - name: Build iOS simulator
         script: flutter build ios --debug --simulator -t lib/main.dart
 
     artifacts:
-      - build/ios/iphonesimulator/*.app
+      - build/ios/iphonesimulator/Runner.app
 
     publishing:
       email:
