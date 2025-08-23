@@ -9,7 +9,7 @@ workflows:
       cocoapods: default
       vars:
         FLAVOR: ios-production  # your flavor name
-        ENTRY_POINT: lib/main_prod.dart  # corresponding main file
+        ENTRY_POINT: lib/main.dart  # corresponding main file
     scripts:
       # 1. Clean Flutter and get dependencies
       - name: Install Flutter dependencies
