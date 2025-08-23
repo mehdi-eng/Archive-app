@@ -1,35 +1,41 @@
 workflows:
-  ios-simulator:
-    name: iOS Simulator Build
-    max_build_duration: 60
+  ios-flavor:
+    name: iOS Flavor Build
     instance_type: mac_mini_m2
     environment:
-      flutter: stable
-      xcode: latest
-      cocoapods: default
+      vars:
+        XCODE_WORKSPACE: "Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
     scripts:
-      - name: Clean and get Flutter dependencies
+      # 1. Remove old CocoaPods
+      - name: Remove old CocoaPods
+        script: |
+          echo "Removing old CocoaPods..."
+          sudo gem uninstall cocoapods -aIx || true
+          sudo rm -f /usr/local/bin/pod || true
+
+      # 2. Install CocoaPods using Homebrew
+      - name: Install CocoaPods via Homebrew
+        script: |
+          echo "Installing CocoaPods via Homebrew..."
+          brew install cocoapods
+          pod --version
+
+      # 3. Update CocoaPods repository
+      - name: Update CocoaPods repo
+        script: |
+          echo "Updating CocoaPods repo..."
+          pod setup
+
+      # 4. Install iOS dependencies
+      - name: Install Pods
+        script: |
+          cd ios
+          pod install --repo-update
+
+      # 5. Flutter build for iOS
+      - name: Build iOS app
         script: |
           flutter clean
           flutter pub get
-
-      - name: Pre-cache Flutter iOS artifacts
-        script: flutter precache --ios
-
-      - name: Install CocoaPods
-        script: |
-          cd ios
-          rm -rf Pods Podfile.lock .symlinks
-          pod install --repo-update
-          cd ..
-
-      - name: Build iOS simulator
-        script: flutter build ios --debug --simulator -t lib/main.dart
-
-    artifacts:
-      - build/ios/iphonesimulator/Runner.app
-
-    publishing:
-      email:
-        recipients:
-          - teabanimehdi@gmail.com
+          flutter build ios --release --no-codesign
