@@ -8,24 +8,34 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      # 1. Get dependencies
+      # 1. Clean and get dependencies
       - name: Install Flutter dependencies
         script: |
           flutter clean
           flutter pub get
 
-      # 2. Generate iOS ephemeral files (creates Flutter/Flutter.h)
-      - name: Build iOS in debug mode to create ephemeral
+      # 2. Generate iOS ephemeral files
+      - name: Pre-build iOS
         script: |
           flutter precache --ios
-          flutter build ios --debug --no-codesign
+          flutter build ios --debug --no-codesign -t lib/main.dart
 
       # 3. Install CocoaPods
       - name: Install pods
         script: |
           cd ios
+          rm -rf Pods Podfile.lock
           pod install --repo-update
           cd ..
 
+      # 4. Build iOS app for device/simulator
+      - name: Build iOS app
+        script: flutter build ios --debug --no-codesign -t lib/main.dart
+
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/iphoneos/*.app
+
+    publishing:
+      email:
+        recipients:
+          - teabanimehdi@gmail.com
