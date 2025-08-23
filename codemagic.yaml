@@ -1,5 +1,5 @@
 workflows:
-  ios-flavor:
+  ios-simulator:
     name: iOS Simulator Build
     max_build_duration: 60
     instance_type: mac_mini_m2
@@ -8,7 +8,7 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      # 1. Clean and get dependencies
+      # 1. Clean and get Flutter dependencies
       - name: Install Flutter dependencies
         script: |
           flutter clean
@@ -19,15 +19,15 @@ workflows:
         script: flutter precache --ios
 
       # 3. Install CocoaPods dependencies
-      - name: Install pods
+      - name: Install CocoaPods
         script: |
           cd ios
           rm -rf Pods Podfile.lock
           pod install --repo-update
           cd ..
 
-      # 4. Build for iOS simulator (no signing needed)
-      - name: Build iOS app for simulator
+      # 4. Build iOS app for simulator (no signing needed)
+      - name: Build iOS simulator
         script: flutter build ios --debug --simulator -t lib/main.dart
 
     artifacts:
